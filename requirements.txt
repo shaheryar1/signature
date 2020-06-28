@@ -1,0 +1,6 @@
+fastapi[all]
+numpy
+opencv-python
+imutils
+Pillow
+scikit-image

@@ -3,7 +3,7 @@ import numpy as np
 import io
 import base64
 from PIL import Image
-from  signature_extractor import extract
+from  signature_extractor import extract,get_boxes
 import base64
 
 
@@ -18,16 +18,21 @@ def encode(img):
 
 app = FastAPI()
 
-
+import cv2
 @app.post("/extract_sign")
 async def root(file: bytes = File(...)):
     try:
-        image = Image.open(io.BytesIO(file)).convert("RGB")[0]
+        image = Image.open(io.BytesIO(file)).convert("RGB")
         img = np.array(image)
+        cv2.imwrite('a.png',img)
+        img = cv2.imread('a.png',0)
 
         results={}
+        signature=extract(img)
+        boxes=get_boxes(signature)
+        results["boxes"] = boxes
+        results['extrcted_image'] =encode(signature)
 
-        results['extrcted_image'] = extract(img)
         return results
     except Exception as e :
-        return {"Error",e}
+        return {"Error",str(e)}

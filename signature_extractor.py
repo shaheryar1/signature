@@ -79,19 +79,28 @@ def extract(img):
 
                 img=cv2.line(img,(0,y1),(W,y2),(0,0,0),5)
 
-    # img=cv2.dilate(img,None,10)
-    # bgr = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-    # contours, h = cv2.findContours(img, 1, 2)
-    #
-    # for contour in contours:
-    #     x, y, w, h = cv2.boundingRect(contour)
-    #     x2=x+w
-    #     y2=y+h
-    #     bgr =cv2.rectangle(bgr, (x, y), (x + w, y + h), (255, 255, 0), 4)
+
     img = cv2.threshold(img, 0, 255 ,cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 
     cv2.imwrite("./outputs/output.png", img)
     return img
+def get_boxes(img):
+    erode=cv2.erode(img,None,iterations=4)
+    contours, h = cv2.findContours(erode, 1, 2)
+    contour_sizes = [(cv2.contourArea(contour)) for contour in contours]
+    print(contour_sizes)
+    boxes=[]
+    for i in range(len(contour_sizes)-1):
+        if (contour_sizes[i]>=1000):
+            x, y, w, h = cv2.boundingRect(contours[i])
+            x2 = x + w
+            y2 = y + h
+            img=cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 2)
+            boxes.append((x,y,x2,y2))
+    cv2.imwrite("./outputs/output.png", img)
+    return boxes
 
-img = cv2.imread('./inputs/test.png', 0)
-extract(img)
+#
+# img = cv2.imread('./inputs/test.png')[:,:,0]
+# h,w = img.shape
+# print(get_boxes(extract(img)))

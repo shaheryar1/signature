@@ -30,7 +30,8 @@ async def root(file: bytes = File(...)):
         results={}
         signature=extract(img)
         boxes=get_boxes(signature)
-        results["boxes"] = boxes
+        results["signs"] = boxes
+
         results['extrcted_image'] =encode(signature)
 
         return results

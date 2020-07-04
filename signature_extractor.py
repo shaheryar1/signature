@@ -1,5 +1,7 @@
 
-
+import io
+import base64
+from PIL import Image
 import cv2
 import matplotlib.pyplot as plt
 from skimage import measure, morphology
@@ -8,6 +10,12 @@ from skimage.measure import regionprops
 import numpy as np
 # read the input image
 
+def encode(img):
+    pil_img = Image.fromarray(img)
+    buff = io.BytesIO()
+    pil_img.save(buff, format="JPEG")
+    new_image_string = base64.b64encode(buff.getvalue()).decode("utf-8")
+    return  new_image_string
 
 def extract(img):
     img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)[1]  # ensure binary
@@ -90,13 +98,17 @@ def get_boxes(img):
     contour_sizes = [(cv2.contourArea(contour)) for contour in contours]
     print(contour_sizes)
     boxes=[]
+
     for i in range(len(contour_sizes)-1):
         if (contour_sizes[i]>=1000):
             x, y, w, h = cv2.boundingRect(contours[i])
             x2 = x + w
             y2 = y + h
-            img=cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 2)
-            boxes.append((x,y,x2,y2))
+
+            boxes.append({"box":(x,y,x2,y2),
+                          "sign_roi":encode(img[y:y2,x:x2])})
+            # boxes["roi"].append(img[y:y2,x:x2])
+            img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 2)
     cv2.imwrite("./outputs/output.png", img)
     return boxes
 
